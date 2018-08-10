@@ -28,16 +28,19 @@ return [
 		// instruct a Workerprocess quit when there are no more tasks for it to execute (true = exit, false = keep running)
 		'exitwhennothingtodo' => false,
 
-		// pid file path directory (by default goes to the app/tmp/queue folder)
-		'pidfilepath' => TMP . 'queue' . DS,
+		// false for DB, or deprecated string pid file path directory (by default goes to the app/tmp/queue folder)
+		'pidfilepath' => false, // Deprecated: TMP . 'queue' . DS,
 
 		// determine whether logging is enabled
 		'log' => true,
 
-		// set to false to disable (tmp = file in TMP dir)
-		'notify' => 'tmp',
-
 		// set default Mailer class
 		'mailerClass' => 'Cake\Mailer\Email',
+
+		// set default datasource connection
+		'connection' => null,
+
+		// enable Search. requires friendsofcake/search
+		'isSearchEnabled' => true,
 	],
 ];

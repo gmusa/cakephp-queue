@@ -26,12 +26,7 @@ class QueueRetryExampleTask extends QueueTask {
 	 *
 	 * @var int
 	 */
-	public $retries = 4;
-
-	/**
-	 * @var string
-	 */
-	protected $file;
+	public $retries = 5;
 
 	/**
 	 * Constructs this Shell instance.
@@ -64,10 +59,6 @@ class QueueRetryExampleTask extends QueueTask {
 		$this->out(__FILE__);
 		$this->out(' ');
 
-		if (file_exists($this->file)) {
-			$this->warn('File seems to already exist. Make sure you run this task standalone. You cannot run it multiple times in parallel!');
-		}
-
 		file_put_contents($this->file, '0');
 
 		/*
@@ -85,18 +76,17 @@ class QueueRetryExampleTask extends QueueTask {
 	 * This function is executed, when a worker is executing a task.
 	 * The return parameter will determine, if the task will be marked completed, or be requeued.
 	 *
-	 * @param array $data The array passed to QueuedJobsTable::createJob()
-	 * @param int $jobId The id of the QueuedJob entity
+	 * @param array $data The array passed to QueuedTask->createJob()
+	 * @param int|null $id The id of the QueuedTask
 	 * @return bool Success
 	 */
-	public function run(array $data, $jobId) {
+	public function run(array $data, $id) {
 		$count = (int)file_get_contents($this->file);
 
 		$this->hr();
 		$this->out('CakePHP Queue Example task.');
 		$this->hr();
 
-		// Let's fake 3 fails before it actually runs successfully
 		if ($count < 3) {
 			$count++;
 			file_put_contents($this->file, (string)$count);

@@ -39,12 +39,10 @@ class QueueTask extends Shell {
 	 *
 	 * @var int
 	 */
-	public $retries = 1;
+	public $retries = 4;
 
 	/**
 	 * Stores any failure messages triggered during run()
-	 *
-	 * @deprecated Use Exception throwing with a clear message instead.
 	 *
 	 * @var string|null
 	 */
@@ -68,16 +66,15 @@ class QueueTask extends Shell {
 	}
 
 	/**
-	 * Run functionality.
-	 *
+	 * Run function.
 	 * This function is executed, when a worker is executing a task.
-	 * The return parameter will determine if the task will be marked completed, or be re-queued.
+	 * The return parameter will determine, if the task will be marked completed, or be requeued.
 	 *
-	 * @param array $data The array passed to QueuedJobsTable::createJob()
-	 * @param int $jobId The id of the QueuedJob entity
+	 * @param array $data The array passed to QueuedTask->createJob()
+	 * @param int $id The id of the QueuedTask
 	 * @return bool Success
 	 */
-	public function run(array $data, $jobId) {
+	public function run(array $data, $id) {
 		return true;
 	}
 

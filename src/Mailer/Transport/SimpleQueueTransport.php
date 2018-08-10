@@ -23,7 +23,7 @@ class SimpleQueueTransport extends AbstractTransport {
 	public function send(Email $email) {
 		if (!empty($this->_config['queue'])) {
 			$this->_config = $this->_config['queue'] + $this->_config;
-			$email->setConfig((array)$this->_config['queue'] + ['queue' => []]);
+			$email->config((array)$this->_config['queue'] + ['queue' => []]);
 			unset($this->_config['queue']);
 		}
 
@@ -60,18 +60,14 @@ class SimpleQueueTransport extends AbstractTransport {
 		$result = $QueuedJobs->createJob('Email', ['settings' => $settings]);
 		$result['headers'] = '';
 		$result['message'] = '';
-
-		return $result->toArray();
+		return $result;
 	}
 
 	/**
 	 * @return \Queue\Model\Table\QueuedJobsTable
 	 */
 	protected function getQueuedJobsModel() {
-		/** @var \Queue\Model\Table\QueuedJobsTable $table */
-		$table = TableRegistry::get('Queue.QueuedJobs');
-
-		return $table;
+		return TableRegistry::get('Queue.QueuedJobs');
 	}
 
 }

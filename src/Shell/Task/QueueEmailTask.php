@@ -6,7 +6,6 @@ use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\Mailer\Email;
 use Exception;
-use Throwable;
 
 /**
  * @author Mark Scherer
@@ -55,46 +54,52 @@ class QueueEmailTask extends QueueTask {
 				'from' => 'system@example.com',
 				'template' => 'sometemplate',
 			],
-			'content' => 'hello world',
+			'vars' => [
+				'content' => 'hello world',
+			],
 		], true));
 		$this->out('Alternativly, you can pass the whole EmailLib to directly use it.');
 	}
 
 	/**
-	 * @param array $data The array passed to QueuedJobsTable::createJob()
-	 * @param int $jobId The id of the QueuedJob entity
+	 * @param mixed $data Job data
+	 * @param int|null $id The id of the QueuedTask
 	 * @return bool Success
-	 * @throws \Exception
 	 */
-	public function run(array $data, $jobId) {
+	public function run(array $data, $id) {
 		if (!isset($data['settings'])) {
 			$this->err('Queue Email task called without settings data.');
 			return false;
 		}
 
-		/** @var \Cake\Mailer\Email $email */
+		/* @var \Cake\Mailer\Email $email */
 		$email = $data['settings'];
 		if (is_object($email) && $email instanceof Email) {
 			try {
-				if (!empty($data['transport'])) {
-					$email->setTransport($data['transport']);
-				}
-				$content = isset($data['content']) ? $data['content'] : null;
-				$result = $email->send($content);
+				$transportClassNames = $email->configuredTransport();
+				$result = $email->transport($transportClassNames[0])->send();
 
+				if (!isset($config['log']) || !empty($config['logTrace']) && $config['logTrace'] === true) {
+					$config['log'] = 'email_trace';
+				} elseif (!empty($config['logTrace'])) {
+					$config['log'] = $config['logTrace'];
+				}
+				if (isset($config['logTrace']) && !$config['logTrace']) {
+					$config['log'] = false;
+				}
+
+				if (!empty($config['logTrace'])) {
+					$this->_log($result, $config['log']);
+				}
 				return (bool)$result;
-			} catch (Throwable $e) {
-				$error = $e->getMessage();
-				$error .= ' (line ' . $e->getLine() . ' in ' . $e->getFile() . ')' . PHP_EOL . $e->getTraceAsString();
-				Log::write('error', $error);
 			} catch (Exception $e) {
 
 				$error = $e->getMessage();
 				$error .= ' (line ' . $e->getLine() . ' in ' . $e->getFile() . ')' . PHP_EOL . $e->getTraceAsString();
-				Log::write('error', $error);
-			}
+				Log::write('email_error', $error);
 
-			return false;
+				return false;
+			}
 		}
 
 		$this->Email = $this->_getMailer();
@@ -104,16 +109,11 @@ class QueueEmailTask extends QueueTask {
 			call_user_func_array([$this->Email, $method], (array)$setting);
 		}
 		$message = null;
-		if (isset($data['content'])) {
-			$message = $data['content'];
-		}
 		if (!empty($data['vars'])) {
-			// @deprecated BC only, use $data['content'] instead.
-			if ($message === null && isset($data['vars']['content'])) {
+			if (isset($data['vars']['content'])) {
 				$message = $data['vars']['content'];
 			}
-
-			$this->Email->setViewVars($data['vars']);
+			$this->Email->viewVars($data['vars']);
 		}
 		if (!empty($data['headers'])) {
 			if (!is_array($data['headers'])) {

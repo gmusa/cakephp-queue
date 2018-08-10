@@ -10,16 +10,11 @@
 	stopOnFailure="false"
 	stopOnIncomplete="false"
 	stopOnSkipped="false"
-	syntaxCheck="false"
->
-	<php>
-		<!-- E_ALL => 32767 -->
-		<!-- E_ALL & ~E_USER_DEPRECATED => 16383 -->
-		<ini name="error_reporting" value="16383"/>
-	</php>
+	syntaxCheck="false">
+
 	<testsuites>
-		<testsuite name="queue">
-			<directory>tests/</directory>
+		<testsuite name="Geo">
+			<directory>./tests/</directory>
 		</testsuite>
 	</testsuites>
 
@@ -34,7 +29,7 @@
     <!-- Prevent coverage reports from looking in tests, vendors, config folders -->
     <filter>
         <whitelist>
-            <directory suffix=".php">src/</directory>
+            <directory suffix=".php">./src/</directory>
         </whitelist>
     </filter>
 
