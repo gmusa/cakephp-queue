@@ -160,7 +160,7 @@ to start a new worker.
 
 The following example uses "crontab":
 
-	*/10  *  *  *  *  cd /full/path/to/app && bin/cake queue runworker -q
+	*/10  *	*	*	*  cd /full/path/to/app && bin/cake queue runworker -q
 
 Make sure you use `crontab -e -u www-data` to set it up as `www-data` user, and not as root etc.
 
@@ -281,7 +281,7 @@ Then they would at least not run forever, and might pile up only if you start th
 
 #### Via tool
 You can kill workers from the backend or the command line.
-Make sure you have set up the workers with the same user (www-data usually) as the user that tries to kill them, or it will not work.
+Make sure you have set up the workers with the same user (www-data usually) as the user that triesto kill them, or it will not work.
 
 #### Manually
 Manually killing workers can be done using `kill -15 PID`. Replace PID with the PID number (e.g. `kill -15 21212`).

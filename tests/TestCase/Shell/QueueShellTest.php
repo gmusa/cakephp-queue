@@ -4,15 +4,11 @@ namespace Queue\Test\TestCase\Shell;
 
 use Cake\Console\ConsoleIo;
 use Cake\Core\Configure;
-use Cake\Datasource\ConnectionManager;
 use Cake\TestSuite\TestCase;
 use Queue\Shell\QueueShell;
 use Tools\TestSuite\ConsoleOutput;
-use Tools\TestSuite\ToolsTestTrait;
 
 class QueueShellTest extends TestCase {
-
-	use ToolsTestTrait;
 
 	/**
 	 * @var \Queue\Shell\QueueShell|\PHPUnit_Framework_MockObject_MockObject
@@ -36,7 +32,6 @@ class QueueShellTest extends TestCase {
 	 */
 	public $fixtures = [
 		'plugin.Queue.QueuedJobs',
-		'plugin.Queue.QueueProcesses',
 	];
 
 	/**
@@ -57,6 +52,7 @@ class QueueShellTest extends TestCase {
 			->getMock();
 
 		$this->QueueShell->initialize();
+		$this->QueueShell->loadTasks();
 
 		Configure::write('Queue', [
 			'sleeptime' => 2,
@@ -66,12 +62,14 @@ class QueueShellTest extends TestCase {
 			'workermaxruntime' => 5,
 			'cleanuptimeout' => 10,
 			'exitwhennothingtodo' => false,
-			'pidfilepath' => false, // TMP . 'queue' . DS,
+			'pidfilepath' => TMP . 'queue' . DS,
 			'log' => false,
 		]);
 	}
 
 	/**
+	 * QueueShellTest::testObject()
+	 *
 	 * @return void
 	 */
 	public function testObject() {
@@ -80,16 +78,19 @@ class QueueShellTest extends TestCase {
 	}
 
 	/**
+	 * QueueShellTest::testStats()
+	 *
 	 * @return void
 	 */
 	public function testStats() {
-		$this->_needsConnection();
-
 		$this->QueueShell->stats();
+		//debug($this->out->output());
 		$this->assertContains('Total unfinished Jobs      : 0', $this->out->output());
 	}
 
 	/**
+	 * QueueShellTest::testSettings()
+	 *
 	 * @return void
 	 */
 	public function testSettings() {
@@ -98,15 +99,19 @@ class QueueShellTest extends TestCase {
 	}
 
 	/**
+	 * QueueShellTest::testAddInexistent()
+	 *
 	 * @return void
 	 */
 	public function testAddInexistent() {
-		$this->QueueShell->args[] = 'FooBar';
+		$this->QueueShell->args[] = 'Foo';
 		$this->QueueShell->add();
-		$this->assertContains('Error: Task not found: FooBar', $this->out->output());
+		$this->assertContains('Error: Task not found: Foo', $this->out->output());
 	}
 
 	/**
+	 * QueueShellTest::testAdd()
+	 *
 	 * @return void
 	 */
 	public function testAdd() {
@@ -117,11 +122,11 @@ class QueueShellTest extends TestCase {
 	}
 
 	/**
+	 * QueueShellTest::testRetry()
+	 *
 	 * @return void
 	 */
 	public function testRetry() {
-		$this->_needsConnection();
-
 		$this->QueueShell->args[] = 'RetryExample';
 		$this->QueueShell->add();
 
@@ -130,55 +135,7 @@ class QueueShellTest extends TestCase {
 
 		$this->QueueShell->runworker();
 
-		$this->assertContains('Job did not finish, requeued after try 1.', $this->out->output());
-	}
-
-	/**
-	 * @return void
-	 */
-	public function testTimeNeeded() {
-		$this->QueueShell = $this->getMockBuilder(QueueShell::class)->setMethods(['_time'])->getMock();
-
-		$first = time();
-		$second = $first - HOUR + MINUTE;
-		$this->QueueShell->expects($this->at(0))->method('_time')->will($this->returnValue($first));
-		$this->QueueShell->expects($this->at(1))->method('_time')->will($this->returnValue($second));
-		$this->QueueShell->expects($this->exactly(2))->method('_time')->withAnyParameters();
-
-		$result = $this->invokeMethod($this->QueueShell, '_timeNeeded');
-		$this->assertSame('3540s', $result);
-	}
-
-	/**
-	 * @return void
-	 */
-	public function testMemoryUsage() {
-		$result = $this->invokeMethod($this->QueueShell, '_memoryUsage');
-		$this->assertRegExp('/^\d+MB/', $result, 'Should be e.g. `17MB` or `17MB/1GB` etc.');
-	}
-
-	/**
-	 * @return void
-	 */
-	public function testStringToArray() {
-		$string = 'Foo,Bar,';
-		$result = $this->invokeMethod($this->QueueShell, '_stringToArray', [$string]);
-
-		$expected = [
-			'Foo',
-			'Bar',
-		];
-		$this->assertSame($expected, $result);
-	}
-
-	/**
-	 * Helper method for skipping tests that need a real connection.
-	 *
-	 * @return void
-	 */
-	protected function _needsConnection() {
-		$config = ConnectionManager::config('test');
-		$this->skipIf(strpos($config['driver'], 'Mysql') === false, 'Only Mysql is working yet for this.');
+		$this->assertContains('Job did not finish, requeued.', $this->out->output());
 	}
 
 }

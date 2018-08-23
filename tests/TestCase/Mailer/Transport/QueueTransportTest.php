@@ -12,6 +12,13 @@ use Queue\Mailer\Transport\QueueTransport;
 class QueueTransportTest extends TestCase {
 
 	/**
+	 * @var array
+	 */
+	public $fixtures = [
+		'plugin.Queue.QueuedJobs',
+	];
+
+	/**
 	 * @var \Queue\Mailer\Transport\QueueTransport
 	 */
 	protected $QueueTransport;
@@ -46,8 +53,8 @@ class QueueTransportTest extends TestCase {
 		$this->assertEquals('Email', $result['job_type']);
 		$this->assertTrue(strlen($result['data']) < 10000);
 
-		$output = unserialize($result['data']);
-		//$this->assertEquals('Testing Message', $output['settings']['_subject']);
+		$output = json_decode($result['data'], true);
+		$this->assertEquals('Testing Message', $output['settings']['_subject']);
 	}
 
 }

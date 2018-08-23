@@ -2,13 +2,10 @@
 
 namespace TestApp\Model\Table;
 
-use Queue\Model\Table\QueuedJobsTable as BaseQueuedJobsTable;
+use Queue\Model\Table\QueuedTasksTable as BaseQueuedTasksTable;
 
-class QueuedJobsTable extends BaseQueuedJobsTable {
+class QueuedTasksTable extends BaseQueuedTasksTable {
 
-	/**
-	 * @var bool
-	 */
 	public $cacheSources = false;
 
 	/**
